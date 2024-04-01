@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+    "github.com/EmmanuelStan12/web-scraper/rottentomatoes"
+)
 
 func main() {
-    fmt.Println("Hello from web scraper in go")
+    rottentomatoes.ScrapePopularTVShows()
 }
