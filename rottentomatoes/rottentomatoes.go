@@ -2,6 +2,8 @@ package rottentomatoes
 
 import (
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
@@ -25,8 +27,9 @@ type TVShow struct {
 }
 
 type OnHTMLScrapeCallback func(TVShowsResponse)
+type ScrapeResponse func ([]TVShow)
 
-func ScrapePopularTVShows() {
+func ScrapePopularTVShows(cb ScrapeResponse) {
     url := "https://editorial.rottentomatoes.com/guide/popular-tv-shows/"
     collector := colly.NewCollector()
 
@@ -37,7 +40,7 @@ func ScrapePopularTVShows() {
     collector.OnError(on_error)
 
     scrape(collector, func(response TVShowsResponse) {
-        log.Println(response)  
+        cb(response.TVShows) 
     })
 
     collector.Visit(url)
@@ -85,6 +88,34 @@ func scrape(collector *colly.Collector, callback OnHTMLScrapeCallback) {
     })
 }
 
+func (show *TVShow) ToArray() []string {
+    return []string {
+        strconv.Itoa(show.Index),
+        show.Title,
+        show.Url,
+        show.CriticsConcensus,
+        show.ReleaseDate,
+        show.ImageUrl,
+        show.MeterScore,
+        strings.Join(show.Directors, "|"),
+        strings.Join(show.Starring, "|"),
+    }
+}
+
+func (_ *TVShow) GetHeaders() []string {
+    return []string {
+        "Index",
+        "Title",
+        "Url",
+        "CriticsConcensus",
+        "ReleaseDate",
+        "ImageUrl",
+        "MeterScore",
+        "Directors",
+        "Starring",
+    }
+}
+
 func on_request(request *colly.Request) {
     log.Println("OnRequest: ", request.URL)
 }
@@ -96,3 +127,4 @@ func on_response(response *colly.Response) {
 func on_error(response *colly.Response, e error) {
     log.Println("OnError: ", response.StatusCode, e)
 }
+
